@@ -4,8 +4,6 @@
 //function prototypes
 void do_first_black_jack_analysis();
 float prob_first_card_is_jack(int,int);
-float prob_card_is_first_jack(int,int,int);
-float prob_team_wins(int,int,int,int);
 int get_user_cards();
 int get_user_jacks(int);
 int get_user_teams();
@@ -28,6 +26,7 @@ int main(){
 			std::cout << "Error: You must type the number for one of the options.\n\n";
 		}
 	}
+	return 0;
 }
 
 void do_first_black_jack_analysis(){
@@ -38,51 +37,44 @@ void do_first_black_jack_analysis(){
 	if (jacks==-1){return;}
 	int teams = get_user_teams();
 	if (teams==-1){return;}
-	//analyze the game and print the results
+	//analyze the game
+	float teamWinProbs[teams] = {0.0};
+	int teamNumber = 0;
+	float coefficient = 1.0;
+	float prevP = 0.0;//stores value of prob_first_card_is_jack in last for loop travel
+	//go through each card and add the probability that it is the first black jack to the win probability to the relavant team
+	for (int cardNumber=1;cardNumber<cards+1;cardNumber++){
+		//if there is more than one black jack, then the final card cannot be the first black jack.
+		if (jacks>cards-(cardNumber-1)){
+			break;
+		}
+		//update teamNumber for this card
+		teamNumber = (cardNumber%teams);
+		if (teamNumber==0){
+			teamNumber=teams;
+		}
+		//calculate the new coefficient
+		coefficient*=1-prevP;
+		//calculate newProb;
+		float newP = prob_first_card_is_jack(cards-(cardNumber-1),jacks);
+		//calculate prob this card is first black jack
+		float probFirstJack = coefficient*newP;
+		teamWinProbs[teamNumber-1] += probFirstJack;
+		//update prevProb
+		prevP = newP;
+	}
+	//print the results
 	std::cout << "\nIn the game with "<<cards<<" cards, "<<jacks<<" black jacks, and "<<teams<<" teams, the probability that each team wins is:\n";
 	for (int teamNumber=1;teamNumber<teams+1;teamNumber++){
-		float winProb = prob_team_wins(cards,jacks,teams,teamNumber);
+		float winProb = teamWinProbs[teamNumber-1];
 		std::cout << "Team "<<teamNumber<<" wins "<<100*winProb<<"% of the time.\n";
 	}
 	std::cout<<"\n";
 }
-//calculation funcs
 float prob_first_card_is_jack(int cards,int jacks){
 	return ((float)jacks/cards);
 }
-float prob_card_is_first_jack(int cards,int jacks,int cardNumber){//cardNumber>=1
-	//if there is more than one black jack, the final card cannot be the first black jack.
-	if (jacks>cards-(cardNumber-1)){
-		return 0;
-	}
-	//Calculate coefficient based on odds all previous cards are not first black jack
-	float coefficient = 1.0;
-	if (cardNumber>1){
-		for (int index=0;index<cardNumber-1;index++){//!!Can be quicker if we save the previous for-loop value and use it to calculate the next
-			coefficient*=1-prob_first_card_is_jack(cards-index,jacks);
-		}
-	}
-	return coefficient*prob_first_card_is_jack(cards-(cardNumber-1),jacks);
-}
-float prob_team_wins(int cards,int jacks,int teams,int teamNumber){//teamNumber>=1
-	//find number of cards this team gets in this game
-	int cardsForTeam = cards/teams;
-	int remainder = cards%teams;
-	if (remainder>=teamNumber){
-		cardsForTeam++;
-	}
-	//no cards means winning is impossible
-	if (cardsForTeam==0){
-		return 0.0;
-	}
-	//add the probability of any one of their cards being the first black jack
-	float totalProb = 0.0;
-	for (int index=0;index<cardsForTeam;index++){
-		int cardNumber = teamNumber+index*teams;
-		totalProb+=prob_card_is_first_jack(cards,jacks,cardNumber);
-	}
-	return totalProb;
-}
+
 //user input functions
 int get_user_cards(){
 	//ask user for number of cards
