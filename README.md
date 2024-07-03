@@ -3,6 +3,8 @@
 Given the total number of cards, the number of black jacks, and the number of teams playing, 
 this script calculates the probability of each team winning the 'First Black Jack Game'.
 
+Check out the corresponding blog post on my website about this project which goes through my derivation of the algorithm used in this script: https://www.mowinpeople.com/2024/07/03/the-first-black-jack-game/
+
 ### How to Use 
 Just compile the code and run it. It runs in the terminal and will ask for the input it needs.\
 Choice 1 Calculates the probabilities of each team winning the First Black Jack Game based on your following inputs.\
